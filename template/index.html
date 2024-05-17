@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Self Confidence Analyzer</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(to bottom, #2c3e50, #1c2833);
+            color: #fff;
+        }
+        #upload-form {
+            max-width: 500px;
+            padding: 30px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        #upload-form:hover {
+            transform: translateY(-5px);
+        }
+        #upload-form h2 {
+            margin-top: 0;
+            font-size: 32px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+        #video-upload {
+            margin-bottom: 20px;
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 20px;
+            width: 100%;
+            box-sizing: border-box;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        button {
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result-container {
+            display: none;
+            max-width: 600px;
+            padding: 30px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            text-align: justify;
+        }
+        #result-container h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+        #result-container h2 {
+            font-size: 18px;
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+        #face, #voice, #gesture{
+            font-size: 16px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            color: #4CAF50;
+        }
+        #confidence {
+            font-size: 28px;
+            font-weight: bold;
+            color: #4CAF50;
+            letter-spacing: 1px;
+        }
+        #transcrib {
+            font-size: 18px;
+            font-weight: 500;
+            color: #fff;
+            letter-spacing: 1px;
+        }
+        #loading {
+            display: none;
+            margin-top: 30px;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div id="upload-form-container">
+        <form id="upload-form" action="/analyze" method="post" enctype="multipart/form-data">
+            <h2>Self Confidence Analyzer</h2>
+            <input type="file" name="file" id="video-upload" accept="video/*">
+            <button type="submit">Analyze Video</button>
+            <div id="loading" style="display: none;">
+                <p>Processing...</p>
+            </div>
+        </form>
+    </div>
+
+    <div id="result-container">
+        <h3>Overall Confidence Level:</h3>
+        <p id="confidence"></p>
+        <!--<h2>Face:</h2>
+        <p id="face"></p>
+        <h2>Voice:</h2>
+        <p id="voice"></p>
+        <h2>Gesture:</h2>
+        <p id="gesture"></p>-->
+        <br>
+        <h3>Transcribed Text:</h3>
+        <p id="transcrib"></p>
+        
+        <button onclick="goBack()">Go Back</button>
+    </div>
+
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            analyzeVideo();
+        });
+
+        function analyzeVideo() {
+            document.getElementById('loading').style.display = 'block';
+            const fileInput = document.getElementById('video-upload');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a video file.');
+                document.getElementById('loading').style.display = 'none';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/analyze', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('confidence').innerText = data.confidence;
+                /*document.getElementById('face').innerText = data.face_confidence;
+                document.getElementById('voice').innerText = data.voice_confidence;
+                document.getElementById('gesture').innerText = data.gesture_confidence;*/
+                document.getElementById('transcrib').innerText = data.transcribed_text;
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('upload-form-container').style.display = 'none';
+                document.getElementById('result-container').style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('loading').style.display = 'none';
+            });
+        }
+
+        function goBack() {
+            document.getElementById('result-container').style.display = 'none';
+            document.getElementById('upload-form-container').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
